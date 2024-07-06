@@ -37,3 +37,29 @@ then go to the Mesh Viewer click the extension icon menu to export the current d
 ~~Python extension not efficient enough for that large Mesh. ~~
 
 I change the export method which greatly enhance the export performance. 
+
+## Edit by HQiuzi
+
+Fill in the parameter name according to your form.
+
+I change the way to find Vertex input window in line 460:
+
+``` Python
+windowlist = main_window.findChildren(QtWidgets.QTableView) #Change by your window name
+table = windowlist[-1]
+```
+And sometimes the input list format may be wrong, please check the shape of data list in line 128:
+``` Python
+for i, idx in enumerate(idx_dict):
+    for attr in attr_list:
+        if attr == "in_ATTRIBUTE5":  # Change by your attribute name
+            try:
+                value = data[attr][i]
+            except:
+                raise Exception(attr)
+        else:
+            value = [data[attr][j][i] for j in range(len(data[attr]))]
+        value_dict[attr].append(value)
+        if idx not in vertex_data[attr]:
+            vertex_data[attr][idx] = value
+```

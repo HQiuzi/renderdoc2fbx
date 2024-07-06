@@ -11,6 +11,7 @@ __author__ = "timmyliang"
 __email__ = "820472580@qq.com"
 __date__ = "2021-01-26 20:44:17"
 
+#  edit by  HQiuzi 2024-07-06 
 
 import os
 import time
@@ -126,7 +127,13 @@ def export_fbx(save_path, mapper, data, attr_list, controller):
 
     for i, idx in enumerate(idx_dict):
         for attr in attr_list:
-            value = data[attr][i]
+            if attr == "in_ATTRIBUTE5":  # Change by your attribute name
+                try:
+                    value = data[attr][i]
+                except:
+                    raise Exception(attr)
+            else:
+                value = [data[attr][j][i] for j in range(len(data[attr]))]
             value_dict[attr].append(value)
             if idx not in vertex_data[attr]:
                 vertex_data[attr][idx] = value
@@ -295,7 +302,7 @@ def export_fbx(save_path, mapper, data, attr_list, controller):
             ] = """
                 LayerElementColor: 0 {
                     Version: 101
-                    Name: "colorSet1"
+                    Name: "VertexColors"
                     MappingInformationType: "ByPolygonVertex"
                     ReferenceInformationType: "IndexToDirect"
                     Colors: *%(colors_num)s {
@@ -337,7 +344,7 @@ def export_fbx(save_path, mapper, data, attr_list, controller):
             ] = """
                 LayerElementUV: 0 {
                     Version: 101
-                    Name: "map1"
+                    Name: "UVSet0"
                     MappingInformationType: "ByPolygonVertex"
                     ReferenceInformationType: "IndexToDirect"
                     UV: *%(uvs_num)s {
@@ -449,7 +456,9 @@ def prepare_export(pyrenderdoc, data):
 
     # NOTE Get Data from QTableView directly
     main_window = pyrenderdoc.GetMainWindow().Widget()
-    table = main_window.findChild(QtWidgets.QTableView, "vsinData")
+
+    windowlist = main_window.findChildren(QtWidgets.QTableView)  # Change by your window name
+    table = windowlist[-1]
 
     model = table.model()
     row_count = model.rowCount()
@@ -459,9 +468,11 @@ def prepare_export(pyrenderdoc, data):
 
     data = defaultdict(list)
     attr_list = set()
-
+    head_list = []
     for _, c in MProgressDialog.loop(columns, status="Collect Mesh Data"):
+        
         head = model.headerData(c, QtCore.Qt.Horizontal)
+        head_list.append(head)
         values = [model.data(model.index(r, c)) for r in rows]
         if "." not in head:
             data[head] = values
@@ -472,7 +483,8 @@ def prepare_export(pyrenderdoc, data):
 
     for _, attr in MProgressDialog.loop(attr_list, status="Rearrange Mesh Data"):
         values_list = data[attr]
-        data[attr] = [[float(values[r]) for values in values_list] for r in rows]
+
+    data[attr] = [[float(values[r]) for values in values_list] for r in rows]
 
     print("elapsed time unpack: %s" % (time.time() - current))
     pyrenderdoc.Replay().BlockInvoke(partial(export_fbx, save_path, dialog.mapper, data, attr_list))
