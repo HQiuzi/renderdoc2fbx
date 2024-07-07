@@ -52,13 +52,13 @@ And sometimes the input list format may be wrong, please check the shape of data
 ``` Python
 for i, idx in enumerate(idx_dict):
     for attr in attr_list:
-        if attr == "in_ATTRIBUTE5":  # Change by your attribute name
+        if attr == "in_ATTRIBUTE3":  # Change by your attribute name
             try:
-                value = data[attr][i]
+                value = [int(item) for item in data[attr][i]]
             except:
-                raise Exception(attr)
+                raise Exception(len(data[attr]))
         else:
-            value = [data[attr][j][i] for j in range(len(data[attr]))]
+            value = [float(data[attr][j][i]) for j in range(len(data[attr]))]
         value_dict[attr].append(value)
         if idx not in vertex_data[attr]:
             vertex_data[attr][idx] = value
